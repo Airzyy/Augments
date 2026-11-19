@@ -10,11 +10,11 @@ public final class AugmentNetwork {
  private static final Map<UUID,Set<String>> PENDING=new ConcurrentHashMap<>();
  private AugmentNetwork(){}
  public static void syncShortbow(ServerPlayer player){
-  boolean enabled=Arrays.asList(player.getPersistentData().getString("augments:owned").split(",")).contains("shortbow");
+  boolean enabled=AugmentManager.hasSpecial(player,"shortbow");
   PacketDistributor.sendToPlayer(player,new ShortbowStatePayload(enabled));
  }
  public static void fireShortbow(ServerPlayer player){
-  if(!Arrays.asList(player.getPersistentData().getString("augments:owned").split(",")).contains("shortbow"))return;
+  if(!AugmentManager.hasSpecial(player,"shortbow"))return;
   var stack=player.getMainHandItem();
   if(!(stack.getItem() instanceof BowItem bow)||player.isUsingItem())return;
   long now=player.level().getGameTime();
