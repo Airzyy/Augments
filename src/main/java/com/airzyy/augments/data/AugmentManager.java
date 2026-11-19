@@ -34,6 +34,24 @@ public final class AugmentManager {
   Set<String> owned=new HashSet<>(p.getPersistentData().getString("augments:owned").isBlank()?List.of():Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));owned.add(a.id());p.getPersistentData().putString("augments:owned",String.join(",",owned));
  }
  public static void removeFrom(ServerPlayer p,String id){Augment a=get(id);if(a!=null&&a.type()==Augment.Type.ATTRIBUTE){ResourceLocation key=ResourceLocation.tryParse(a.target());if(key!=null){AttributeInstance i=p.getAttribute(BuiltInRegistries.ATTRIBUTE.get(key));if(i!=null)i.removeModifier(ResourceLocation.fromNamespaceAndPath("augments",a.id()));}}Set<String>s=new HashSet<>(Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));s.remove(id.toLowerCase(Locale.ROOT));p.getPersistentData().putString("augments:owned",String.join(",",s));}
- public static List<Augment> roll(String rarity){List<Augment> pool;if(rarity.equalsIgnoreCase("all")){int n=RANDOM.nextInt(1000);Augment.Rarity r=n<500?Augment.Rarity.COMMON:n<780?Augment.Rarity.UNCOMMON:n<910?Augment.Rarity.RARE:n<970?Augment.Rarity.EPIC:n<995?Augment.Rarity.LEGENDARY:Augment.Rarity.MYTHIC;pool=byRarity(r);if(pool.isEmpty())pool=all();}else pool=byRarity(Augment.Rarity.parse(rarity));List<Augment> copy=new ArrayList<>(pool);Collections.shuffle(copy);return copy.stream().limit(3).collect(Collectors.toList());}
+ public static List<Augment> roll(String rarity){
+  List<Augment> result=new ArrayList<>();
+  if(!rarity.equalsIgnoreCase("all")){List<Augment> pool=new ArrayList<>(byRarity(Augment.Rarity.parse(rarity)));Collections.shuffle(pool);return pool.stream().limit(3).collect(Collectors.toList());}
+  Set<String> selected=new HashSet<>();
+  int[] weights={500,280,130,60,25,5};
+  Augment.Rarity[] tiers=Augment.Rarity.values();
+  for(int slot=0;slot<3;slot++){
+   List<Augment> candidates=List.of();
+   for(int attempt=0;attempt<12&&candidates.isEmpty();attempt++){
+    int total=Arrays.stream(weights).sum(),pick=RANDOM.nextInt(total),index=0;
+    while(index<weights.length-1&&pick>=weights[index]){pick-=weights[index];index++;}
+    candidates=byRarity(tiers[index]).stream().filter(a->!selected.contains(a.id())).toList();
+   }
+   if(candidates.isEmpty())candidates=all().stream().filter(a->!selected.contains(a.id())).toList();
+   if(candidates.isEmpty())break;
+   Augment chosen=candidates.get(RANDOM.nextInt(candidates.size()));selected.add(chosen.id());result.add(chosen);
+  }
+  return result;
+ }
  private static void write(Path p,String s){try{Files.createDirectories(dir());Files.writeString(p,s);}catch(IOException e){throw new IllegalStateException(e);}}
 }
