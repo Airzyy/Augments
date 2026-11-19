@@ -2,12 +2,21 @@ package com.airzyy.augments.network;
 import com.airzyy.augments.data.Augment;
 import com.airzyy.augments.data.AugmentManager;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.BowItem;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 public final class AugmentNetwork {
  private static final Map<UUID,Set<String>> PENDING=new ConcurrentHashMap<>();
+ private static final TagKey<Item> COMMON_BOWS=TagKey.create(Registries.ITEM,ResourceLocation.fromNamespaceAndPath("c","tools/bows"));
+ private static final TagKey<Item> FORGE_BOWS=TagKey.create(Registries.ITEM,ResourceLocation.fromNamespaceAndPath("forge","tools/bows"));
+ private static boolean isBow(net.minecraft.world.item.ItemStack stack){
+  return stack.is(ItemTags.BOW_ENCHANTABLE)||stack.is(COMMON_BOWS)||stack.is(FORGE_BOWS);
+ }
  private AugmentNetwork(){}
  public static void syncShortbow(ServerPlayer player){
   boolean enabled=AugmentManager.hasSpecial(player,"shortbow");
@@ -16,11 +25,11 @@ public final class AugmentNetwork {
  public static void fireShortbow(ServerPlayer player){
   if(!AugmentManager.hasSpecial(player,"shortbow"))return;
   var stack=player.getMainHandItem();
-  if(!(stack.getItem() instanceof BowItem bow)||player.isUsingItem())return;
+  if(!isBow(stack)||player.isUsingItem())return;
   long now=player.level().getGameTime();
   if(now<player.getPersistentData().getLong("augments:shortbow_next_shot"))return;
   player.getPersistentData().putLong("augments:shortbow_next_shot",now+4);
-  bow.releaseUsing(stack,player.level(),player,0);
+  stack.getItem().releaseUsing(stack,player.level(),player,0);
  }
  public static void open(ServerPlayer player,List<Augment> choices){
   if(choices.isEmpty())return;
