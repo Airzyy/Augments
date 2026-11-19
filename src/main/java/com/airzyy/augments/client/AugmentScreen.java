@@ -15,6 +15,9 @@ public class AugmentScreen extends Screen {
  public AugmentScreen(List<OpenAugmentScreenPayload.Card> cards){super(Component.literal("Choose an Augment"));this.cards=List.copyOf(cards);}
  @Override protected void init(){super.init();}
  @Override public void tick(){super.tick();age++;}
+ // Keep the world visible behind the dark overlay; never apply Minecraft menu blur.
+ @Override public void renderBackground(GuiGraphics g,int mx,int my,float partialTick) {}
+ private static float easeOutCubic(float t){float inv=1f-t;return 1f-inv*inv*inv;}
  private int cardWidth(){return Math.max(150,Math.min(300,(int)(width*.235)));}
  private int cardHeight(){return Math.min(310,(int)(height*.72));}
  private int gap(){return 12;}
@@ -26,7 +29,8 @@ public class AugmentScreen extends Screen {
   g.drawCenteredString(font,"CHOOSE AN AUGMENT",width/2,Math.max(12,top()-34),0xFFFFFFFF);
   g.drawCenteredString(font,"SELECT ONE TO ADD IT TO YOUR BUILD",width/2,Math.max(25,top()-18),0xFFB9C4D2);
   for(int i=0;i<cards.size();i++){
-   float reveal=Math.min(1f,Math.max(0f,(age+partial-i*7)/12f));
+   float t=Math.min(1f,Math.max(0f,(age+partial-i*7)/12f));
+   float reveal=easeOutCubic(t);
    if(reveal<=0)continue;
    int x=left()+i*(cardWidth()+gap());
    int y=top()+(int)((1-reveal)*26);
