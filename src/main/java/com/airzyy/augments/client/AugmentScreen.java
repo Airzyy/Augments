@@ -54,11 +54,11 @@ public class AugmentScreen extends Screen {
   // Reserved icon area: custom assets are added in the next UI pass.
   g.drawCenteredString(font,c.name(),x+w/2,y+48,(a)|0xFFFFFF);
   int yy=y+76;
-  for(String line:font.split(Component.literal(c.value()),w-24)){
+  for(var line:font.split(Component.literal(c.value()),w-24)){
    g.drawCenteredString(font,line,x+w/2,yy,(a)|edge);yy+=font.lineHeight+2;
   }
   yy+=10;
-  for(String line:font.split(Component.literal(c.description()==null?"":c.description()),w-24)){
+  for(var line:font.split(Component.literal(c.description()==null?"":c.description()),w-24)){
    if(yy>y+h-44)break;
    g.drawString(font,line,x+12,yy,(a)|0xD9E0EA,false);yy+=font.lineHeight+2;
   }
