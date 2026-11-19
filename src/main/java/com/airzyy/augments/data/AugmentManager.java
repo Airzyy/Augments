@@ -12,6 +12,7 @@ import java.lang.reflect.Type;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.airzyy.augments.network.AugmentNetwork;
 public final class AugmentManager {
  private static final Gson GSON=new GsonBuilder().setPrettyPrinting().create();
  private static final Type LIST_TYPE=new TypeToken<List<Augment>>(){}.getType();
@@ -31,9 +32,9 @@ public final class AugmentManager {
  public static void apply(ServerPlayer p,Augment a){
   if(a.type()==Augment.Type.ATTRIBUTE){ResourceLocation key=ResourceLocation.tryParse(a.target());if(key==null)return;var attr=BuiltInRegistries.ATTRIBUTE.getHolder(key).orElse(null);if(attr==null)return;AttributeInstance inst=p.getAttribute(attr);if(inst==null)return;ResourceLocation mid=ResourceLocation.fromNamespaceAndPath("augments",a.id());inst.removeModifier(mid);boolean pct="percent".equalsIgnoreCase(a.operation());double value=pct?a.amount()/100.0-1.0:a.amount();inst.addOrUpdateTransientModifier(new AttributeModifier(mid,value,pct?AttributeModifier.Operation.ADD_MULTIPLIED_BASE:AttributeModifier.Operation.ADD_VALUE));}
   else if(a.type()==Augment.Type.EFFECT){String[] x=a.target().split(",");ResourceLocation id=ResourceLocation.tryParse(x[0]);var effect=id==null?null:BuiltInRegistries.MOB_EFFECT.getHolder(id).orElse(null);if(effect!=null){int duration=x.length>1?Integer.parseInt(x[1]):1200;int amplifier=x.length>2?Integer.parseInt(x[2]):0;p.addEffect(new net.minecraft.world.effect.MobEffectInstance(effect,duration,amplifier));}}
-  Set<String> owned=new HashSet<>(p.getPersistentData().getString("augments:owned").isBlank()?List.of():Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));owned.add(a.id());p.getPersistentData().putString("augments:owned",String.join(",",owned));
+  Set<String> owned=new HashSet<>(p.getPersistentData().getString("augments:owned").isBlank()?List.of():Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));owned.add(a.id());p.getPersistentData().putString("augments:owned",String.join(",",owned));if(a.type()==Augment.Type.SPECIAL&&"shortbow".equalsIgnoreCase(a.target()))AugmentNetwork.syncShortbow(p);
  }
- public static void removeFrom(ServerPlayer p,String id){Augment a=get(id);if(a!=null&&a.type()==Augment.Type.ATTRIBUTE){ResourceLocation key=ResourceLocation.tryParse(a.target());if(key!=null){var attr=BuiltInRegistries.ATTRIBUTE.getHolder(key).orElse(null);AttributeInstance i=attr==null?null:p.getAttribute(attr);if(i!=null)i.removeModifier(ResourceLocation.fromNamespaceAndPath("augments",a.id()));}}Set<String>s=new HashSet<>(Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));s.remove(id.toLowerCase(Locale.ROOT));p.getPersistentData().putString("augments:owned",String.join(",",s));}
+ public static void removeFrom(ServerPlayer p,String id){Augment a=get(id);if(a!=null&&a.type()==Augment.Type.ATTRIBUTE){ResourceLocation key=ResourceLocation.tryParse(a.target());if(key!=null){var attr=BuiltInRegistries.ATTRIBUTE.getHolder(key).orElse(null);AttributeInstance i=attr==null?null:p.getAttribute(attr);if(i!=null)i.removeModifier(ResourceLocation.fromNamespaceAndPath("augments",a.id()));}}Set<String>s=new HashSet<>(Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));s.remove(id.toLowerCase(Locale.ROOT));p.getPersistentData().putString("augments:owned",String.join(",",s));if("shortbow".equalsIgnoreCase(id))AugmentNetwork.syncShortbow(p);}
  public static List<Augment> roll(String rarity){
   List<Augment> result=new ArrayList<>();
   if(!rarity.equalsIgnoreCase("all")){List<Augment> pool=new ArrayList<>(byRarity(Augment.Rarity.parse(rarity)));Collections.shuffle(pool);return pool.stream().limit(3).collect(Collectors.toList());}
