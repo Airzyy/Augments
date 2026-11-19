@@ -73,7 +73,7 @@ public class AugmentScreen extends Screen {
  private static int panel(String r){return switch(r){case "RARE"->0xFF10294C;case "EPIC"->0xFF281438;case "LEGENDARY"->0xFF382A12;case "MYTHIC"->0xFF3A141D;default->0xFF292D35;};}
  private static int blend(int a,int b,double t){int r=(int)(((a>>16)&255)*(1-t)+((b>>16)&255)*t),g=(int)(((a>>8)&255)*(1-t)+((b>>8)&255)*t),bl=(int)((a&255)*(1-t)+(b&255)*t);return (r<<16)|(g<<8)|bl;}
  @Override public boolean mouseClicked(double mx,double my,int button){
-  if(button==0&&!choosing){for(int i=0;i<cards.size();i++){int x=left()+i*(cardWidth()+gap()),y=top();if(mx>=x&&mx<x+cardWidth()&&my>=y&&my<y+cardHeight()){choosing=true;Minecraft.getInstance().player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK,0.8f,1.15f);PacketDistributor.sendToServer(new SelectAugmentPayload(cards.get(i).id()));Minecraft.getInstance().setScreen(null);return true;}}}
+  if(button==0&&!choosing){for(int i=0;i<cards.size();i++){int x=left()+i*(cardWidth()+gap()),y=top();if(mx>=x&&mx<x+cardWidth()&&my>=y&&my<y+cardHeight()){choosing=true;Minecraft.getInstance().player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(),0.8f,1.15f);PacketDistributor.sendToServer(new SelectAugmentPayload(cards.get(i).id()));Minecraft.getInstance().setScreen(null);return true;}}}
   return super.mouseClicked(mx,my,button);
  }
  @Override public boolean isPauseScreen(){return false;}
