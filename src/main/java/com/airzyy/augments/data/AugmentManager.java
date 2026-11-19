@@ -26,6 +26,10 @@ public final class AugmentManager {
  public static synchronized void save(Augment a){AUGMENTS.put(a.id().toLowerCase(Locale.ROOT),a);write(dir().resolve(a.rarity().fileName()),GSON.toJson(AUGMENTS.values().stream().filter(x->x.rarity()==a.rarity()).toList()));}
  public static Augment get(String id){return AUGMENTS.get(id.toLowerCase(Locale.ROOT));}
  public static List<Augment> all(){return List.copyOf(AUGMENTS.values());}
+ public static boolean hasSpecial(ServerPlayer player,String key){
+  Set<String> owned=new HashSet<>(Arrays.asList(player.getPersistentData().getString("augments:owned").split(",")));
+  return AUGMENTS.values().stream().anyMatch(a->a.type()==Augment.Type.SPECIAL&&a.target().equalsIgnoreCase(key)&&owned.contains(a.id()));
+ }
  public static List<Augment> byRarity(Augment.Rarity r){return AUGMENTS.values().stream().filter(a->a.rarity()==r).toList();}
  public static synchronized void defineAttribute(String id,String name){NAMES.put(id,name);write(dir().resolve("attributes.json"),GSON.toJson(NAMES));}
  public static String displayName(String id){return NAMES.getOrDefault(id,id);}
@@ -34,7 +38,7 @@ public final class AugmentManager {
   else if(a.type()==Augment.Type.EFFECT){String[] x=a.target().split(",");ResourceLocation id=ResourceLocation.tryParse(x[0]);var effect=id==null?null:BuiltInRegistries.MOB_EFFECT.getHolder(id).orElse(null);if(effect!=null){int duration=x.length>1?Integer.parseInt(x[1]):1200;int amplifier=x.length>2?Integer.parseInt(x[2]):0;p.addEffect(new net.minecraft.world.effect.MobEffectInstance(effect,duration,amplifier));}}
   Set<String> owned=new HashSet<>(p.getPersistentData().getString("augments:owned").isBlank()?List.of():Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));owned.add(a.id());p.getPersistentData().putString("augments:owned",String.join(",",owned));if(a.type()==Augment.Type.SPECIAL&&"shortbow".equalsIgnoreCase(a.target()))AugmentNetwork.syncShortbow(p);
  }
- public static void removeFrom(ServerPlayer p,String id){Augment a=get(id);if(a!=null&&a.type()==Augment.Type.ATTRIBUTE){ResourceLocation key=ResourceLocation.tryParse(a.target());if(key!=null){var attr=BuiltInRegistries.ATTRIBUTE.getHolder(key).orElse(null);AttributeInstance i=attr==null?null:p.getAttribute(attr);if(i!=null)i.removeModifier(ResourceLocation.fromNamespaceAndPath("augments",a.id()));}}Set<String>s=new HashSet<>(Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));s.remove(id.toLowerCase(Locale.ROOT));p.getPersistentData().putString("augments:owned",String.join(",",s));if("shortbow".equalsIgnoreCase(id))AugmentNetwork.syncShortbow(p);}
+ public static void removeFrom(ServerPlayer p,String id){Augment a=get(id);if(a!=null&&a.type()==Augment.Type.ATTRIBUTE){ResourceLocation key=ResourceLocation.tryParse(a.target());if(key!=null){var attr=BuiltInRegistries.ATTRIBUTE.getHolder(key).orElse(null);AttributeInstance i=attr==null?null:p.getAttribute(attr);if(i!=null)i.removeModifier(ResourceLocation.fromNamespaceAndPath("augments",a.id()));}}Set<String>s=new HashSet<>(Arrays.asList(p.getPersistentData().getString("augments:owned").split(",")));s.remove(id.toLowerCase(Locale.ROOT));p.getPersistentData().putString("augments:owned",String.join(",",s));if(a!=null&&a.type()==Augment.Type.SPECIAL&&"shortbow".equalsIgnoreCase(a.target()))AugmentNetwork.syncShortbow(p);}
  public static List<Augment> roll(String rarity){
   List<Augment> result=new ArrayList<>();
   if(!rarity.equalsIgnoreCase("all")){List<Augment> pool=new ArrayList<>(byRarity(Augment.Rarity.parse(rarity)));Collections.shuffle(pool);return pool.stream().limit(3).collect(Collectors.toList());}
