@@ -12,10 +12,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 public final class AugmentNetwork {
  private static final Map<UUID,Set<String>> PENDING=new ConcurrentHashMap<>();
+ private static final TagKey<Item> AUGMENT_BOWS=TagKey.create(Registries.ITEM,ResourceLocation.fromNamespaceAndPath("augments","bows"));
  private static final TagKey<Item> COMMON_BOWS=TagKey.create(Registries.ITEM,ResourceLocation.fromNamespaceAndPath("c","tools/bows"));
  private static final TagKey<Item> FORGE_BOWS=TagKey.create(Registries.ITEM,ResourceLocation.fromNamespaceAndPath("forge","tools/bows"));
  private static boolean isBow(net.minecraft.world.item.ItemStack stack){
-  return stack.is(ItemTags.BOW_ENCHANTABLE)||stack.is(COMMON_BOWS)||stack.is(FORGE_BOWS);
+  return stack.is(AUGMENT_BOWS)||stack.is(ItemTags.BOW_ENCHANTABLE)||stack.is(COMMON_BOWS)||stack.is(FORGE_BOWS);
  }
  private AugmentNetwork(){}
  public static void syncShortbow(ServerPlayer player){
