@@ -11,4 +11,4 @@ Create the built-in shortbow augment with:
 /augment give @s shortbow
 ```
 
-While holding a normal bow in your main hand, left-click (punch) to release a fully charged shot immediately. It uses the vanilla bow's release logic, so arrow availability, Infinity, bow enchantments, and the normal projectile setup are handled by Minecraft rather than spawning a bare arrow. The augment has a short server-side firing interval to prevent duplicate packet shots.
+While holding any item in your main hand that is tagged as a bow, left-click (punch) to trigger its own release behavior at full charge. Supported tags are `#minecraft:enchantable/bow`, `#c:tools/bows`, `#forge:tools/bows`, and the mod's extensible `#augments:bows` tag. Add modded bows to `data/augments/tags/item/bows.json` (or another datapack) if they are not already in one of those tags. The item’s own `releaseUsing` implementation handles its normal projectile, ammo, and enchantment behavior; the mod does not create a generic arrow. A short server-side firing interval prevents duplicate packet shots.
