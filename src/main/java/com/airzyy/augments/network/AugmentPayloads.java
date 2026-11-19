@@ -8,7 +8,7 @@ public final class AugmentPayloads {
  public static void register(RegisterPayloadHandlersEvent event){
   PayloadRegistrar registrar=event.registrar("1");
   registrar.playToClient(OpenAugmentScreenPayload.TYPE,OpenAugmentScreenPayload.STREAM_CODEC,(payload,context)->
-   net.neoforged.fml.DistExecutor.unsafeRunWhenOn(net.neoforged.api.distmarker.Dist.CLIENT,()->()->AugmentClient.open(payload)));
+   net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT ? AugmentClient.open(payload) : null);
   registrar.playToServer(SelectAugmentPayload.TYPE,SelectAugmentPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{
    if(context.player() instanceof ServerPlayer player)AugmentNetwork.select(player,payload.id());
   }));
