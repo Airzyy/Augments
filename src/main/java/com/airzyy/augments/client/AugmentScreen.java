@@ -15,7 +15,7 @@ public class AugmentScreen extends Screen {
  public AugmentScreen(List<OpenAugmentScreenPayload.Card> cards){super(Component.literal("Choose an Augment"));this.cards=List.copyOf(cards);}
  @Override protected void init(){super.init();}
  @Override public void tick(){super.tick();age++;}
- private int cardWidth(){return Math.min(210,(int)(width*.235));}
+ private int cardWidth(){return Math.max(150,Math.min(300,(int)(width*.235)));}
  private int cardHeight(){return Math.min(310,(int)(height*.72));}
  private int gap(){return 12;}
  private int totalWidth(){return cards.size()*cardWidth()+Math.max(0,cards.size()-1)*gap();}
@@ -38,33 +38,33 @@ public class AugmentScreen extends Screen {
  private void drawCard(GuiGraphics g,OpenAugmentScreenPayload.Card c,int x,int y,int mx,int my,float alpha,int index){
   int w=cardWidth(),h=cardHeight();
   boolean hover=mx>=x&&mx<x+w&&my>=y&&my<y+h;
-  int edge=color(c.rarity),panel=panel(c.rarity);
+  int edge=color(c.rarity()),panel=panel(c.rarity());
   int a=(int)(alpha*255)<<24;
   g.fill(x-2,y-2,x+w+2,y+h+2,(a)|(edge&0xFFFFFF));
   g.fill(x,y,x+w,y+h,(a)|(panel&0xFFFFFF));
-  if(c.rarity.equals("EPIC")||c.rarity.equals("LEGENDARY")||c.rarity.equals("MYTHIC")){
+  if(c.rarity().equals("EPIC")||c.rarity().equals("LEGENDARY")||c.rarity().equals("MYTHIC")){
    g.fillGradient(x+2,y+2,x+w-2,y+h/2,(a)|blend(edge,0x101522,0.15),(a)|blend(edge,0x202033,0.65));
    g.fillGradient(x+2,y+h/2,x+w-2,y+h-2,(a)|blend(edge,0x171827,0.55),(a)|blend(edge,0x090D16,0.8));
   }
   if(hover)g.fill(x+2,y+2,x+w-2,y+h-2,0x18FFFFFF);
   int text=(int)(alpha*255)<<24|0xFFFFFF;
-  String rarity=c.rarity.toUpperCase(Locale.ROOT);
+  String rarity=c.rarity().toUpperCase(Locale.ROOT);
   g.drawCenteredString(font,rarity,x+w/2,y+13,text&0xFFFFFFFF);
   g.fill(x+14,y+34,x+w-14,y+35,(a)|edge);
   // Reserved icon area: custom assets are added in the next UI pass.
-  g.drawCenteredString(font,c.name,x+w/2,y+48,(a)|0xFFFFFF);
+  g.drawCenteredString(font,c.name(),x+w/2,y+48,(a)|0xFFFFFF);
   int yy=y+76;
-  for(String line:font.split(Component.literal(c.value),w-24)){
+  for(String line:font.split(Component.literal(c.value()),w-24)){
    g.drawCenteredString(font,line,x+w/2,yy,(a)|edge);yy+=font.lineHeight+2;
   }
   yy+=10;
-  for(String line:font.split(Component.literal(c.description==null?"":c.description),w-24)){
+  for(String line:font.split(Component.literal(c.description()==null?"":c.description()),w-24)){
    if(yy>y+h-44)break;
    g.drawString(font,line,x+12,yy,(a)|0xD9E0EA,false);yy+=font.lineHeight+2;
   }
   String typeLabel=hover?"CLICK TO SELECT":"AUGMENT";
   g.drawCenteredString(font,typeLabel,x+w/2,y+h-26,(a)|(hover?0xFFFFFFFF:0xFFB8C2D0));
-  if(c.rarity.equals("MYTHIC")&&age%16<8){
+  if(c.rarity().equals("MYTHIC")&&age%16<8){
    g.fill(x+w-13,y+12,x+w-10,y+15,(a)|0xFFFFD5D5);
    g.fill(x+10,y+h-16,x+13,y+h-13,(a)|0xFFFFD5D5);
   }
@@ -73,7 +73,7 @@ public class AugmentScreen extends Screen {
  private static int panel(String r){return switch(r){case "RARE"->0xFF10294C;case "EPIC"->0xFF281438;case "LEGENDARY"->0xFF382A12;case "MYTHIC"->0xFF3A141D;default->0xFF292D35;};}
  private static int blend(int a,int b,double t){int r=(int)(((a>>16)&255)*(1-t)+((b>>16)&255)*t),g=(int)(((a>>8)&255)*(1-t)+((b>>8)&255)*t),bl=(int)((a&255)*(1-t)+(b&255)*t);return (r<<16)|(g<<8)|bl;}
  @Override public boolean mouseClicked(double mx,double my,int button){
-  if(button==0&&!choosing){for(int i=0;i<cards.size();i++){int x=left()+i*(cardWidth()+gap()),y=top();if(mx>=x&&mx<x+cardWidth()&&my>=y&&my<y+cardHeight()){choosing=true;PacketDistributor.sendToServer(new SelectAugmentPayload(cards.get(i).id()));Minecraft.getInstance().setScreen(null);return true;}}}
+  if(button==0&&!choosing){for(int i=0;i<cards.size();i++){int x=left()+i*(cardWidth()+gap()),y=top();if(mx>=x&&mx<x+cardWidth()&&my>=y&&my<y+cardHeight()){choosing=true;Minecraft.getInstance().player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK,0.8f,1.15f);PacketDistributor.sendToServer(new SelectAugmentPayload(cards.get(i).id()));Minecraft.getInstance().setScreen(null);return true;}}}
   return super.mouseClicked(mx,my,button);
  }
  @Override public boolean isPauseScreen(){return false;}
